@@ -1,6 +1,26 @@
 // js/area.js
 let areaCharts = {};
 
+// Hàm sắp xếp khu vực theo thứ tự mong muốn
+function sortKhuVuc(kvList) {
+    const order = [
+        'KV1', 'KV2', 'KV3', 'KV4', 'KV5', 'KV6',
+        'Miền Bắc (Chợ)', 'Miền Trung', 'Miền Nam'
+    ];
+    
+    return [...kvList].sort((a, b) => {
+        const indexA = order.indexOf(a);
+        const indexB = order.indexOf(b);
+        
+        if (indexA !== -1 && indexB !== -1) {
+            return indexA - indexB;
+        }
+        if (indexA !== -1) return -1;
+        if (indexB !== -1) return 1;
+        return a.localeCompare(b);
+    });
+}
+
 function updateAreaCharts() {
     if (areaCharts.barKVDetail) areaCharts.barKVDetail.destroy();
     updateBarChartKVDetail();
@@ -25,8 +45,10 @@ function updateBarChartKVDetail() {
     
     // Tạo dữ liệu chi tiết theo ngành hàng cho từng khu vực
     const nganhDetailByKV = {};
-    const totalQuantityByKV = {}; // Tổng số lượng theo khu vực
-    const khuVucs = Object.keys(kvData);
+    const totalQuantityByKV = {};
+    
+    // Lấy danh sách khu vực và sắp xếp theo thứ tự mong muốn
+    const khuVucs = sortKhuVuc(Object.keys(kvData));
     
     khuVucs.forEach(kv => {
         nganhDetailByKV[kv] = {};
@@ -52,14 +74,22 @@ function updateBarChartKVDetail() {
             totalQuantityByKV[kv] += soLuong;
         }
     });
+    
+    // Tạo mảng dữ liệu đã sắp xếp theo thứ tự khu vực
+    const sortedDoanhSo = khuVucs.map(kv => kvData[kv] || 0);
+
+    // Hủy biểu đồ cũ nếu tồn tại
+    if (areaCharts.barKVDetail) {
+        areaCharts.barKVDetail.destroy();
+    }
 
     areaCharts.barKVDetail = new Chart(ctx, {
         type: 'bar',
         data: {
-            labels: Object.keys(kvData),
+            labels: khuVucs,
             datasets: [{
                 label: 'Doanh số bán',
-                data: Object.values(kvData),
+                data: sortedDoanhSo,
                 backgroundColor: '#ff7300'
             }]
         },
@@ -165,7 +195,10 @@ function updateAreaTable() {
         }
     });
 
-    // Tạo HTML cho bảng với cấu trúc đúng
+    // Sắp xếp các khu vực theo thứ tự mong muốn
+    const sortedKVs = sortKhuVuc(Object.keys(kvData));
+
+    // Tạo HTML cho bảng
     let html = `
         <div class="data-table">
             <h3><i class="fas fa-layer-group"></i> Thống kê theo khu vực</h3>
@@ -183,7 +216,8 @@ function updateAreaTable() {
                     <tbody>
     `;
     
-    Object.entries(kvData).forEach(([kv, data]) => {
+    sortedKVs.forEach(kv => {
+        const data = kvData[kv];
         html += `
             <tr>
                 <td>${kv}</td>
