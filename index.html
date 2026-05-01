@@ -1,4 +1,3 @@
-<!-- index.html -->
 <!DOCTYPE html>
 <html lang="vi">
 
@@ -15,6 +14,7 @@
     
     <!-- CSS Modules -->
     <link rel="stylesheet" href="css/main.css">
+    <link rel="stylesheet" href="css/login.css">
     <link rel="stylesheet" href="css/overview.css">
     <link rel="stylesheet" href="css/region.css">
     <link rel="stylesheet" href="css/area.css">
@@ -23,135 +23,157 @@
 </head>
 
 <body>
-    <div class="container">
-        <div class="header">
-            <h1><i class="fas fa-chart-line"></i> Phân Tích Doanh Số Bán Hàng</h1>
-        </div>
-
-        <div class="filter-section">
-            <div class="filter-group">
-                <label><i class="fas fa-calendar"></i> Từ ngày</label>
-                <input type="text" id="startDate" class="datepicker" placeholder="Chọn ngày bắt đầu">
+    <!-- Login Overlay -->
+    <div id="loginOverlay" class="login-overlay">
+        <div class="login-card">
+            <i class="fas fa-lock"></i>
+            <h2>🔐 Truy cập dữ liệu</h2>
+            <p>Vui lòng nhập mã bảo mật để xem báo cáo doanh số</p>
+            <div class="login-input-group">
+                <i class="fas fa-key"></i>
+                <input type="password" id="accessCode" placeholder="Nhập mã truy cập" autocomplete="off">
             </div>
-            <div class="filter-group">
-                <label><i class="fas fa-calendar"></i> Đến ngày</label>
-                <input type="text" id="endDate" class="datepicker" placeholder="Chọn ngày kết thúc">
-            </div>
-        </div>
-
-        <div class="tab-buttons">
-            <button class="tab-btn active" onclick="switchTab('overview', event)">Tổng quan</button>
-            <button class="tab-btn" onclick="switchTab('byRegion', event)">Theo miền</button>
-            <button class="tab-btn" onclick="switchTab('byArea', event)">Theo khu vực</button>
-            <button class="tab-btn" onclick="switchTab('byProvince', event)">Theo tỉnh</button>
-            <button class="tab-btn" onclick="switchTab('byNPP', event)">Theo NPP</button>
-        </div>
-
-<!-- Overview Tab -->
-<div id="overview" class="tab-content active">
-    <div class="stats-grid" id="overviewStats"></div>
-    <div class="charts-grid">
-        <div class="chart-container">
-            <h3><i class="fas fa-chart-pie"></i> Doanh số theo miền</h3>
-            <div class="chart-wrapper">
-                <canvas id="pieChartMien"></canvas>
-            </div>
-        </div>
-        <div class="chart-container">
-            <h3><i class="fas fa-chart-line"></i> Doanh số theo ngành hàng</h3>
-            <div class="chart-wrapper">
-                <canvas id="lineChartNganhHang"></canvas>
-            </div>
-        </div>
-        <div class="chart-container full-width-chart">
-            <h3><i class="fas fa-chart-bar"></i> Doanh số theo khu vực</h3>
-            <div class="chart-wrapper">
-                <canvas id="barChartKV"></canvas>
-            </div>
-        </div>
-        <div class="chart-container full-width-chart">
-            <h3><i class="fas fa-chart-line"></i> Xu hướng doanh số theo ngày</h3>
-            <div class="chart-wrapper">
-                <canvas id="lineChartDaily"></canvas>
+            <button class="login-btn" onclick="verifyAccess()">
+                <i class="fas fa-sign-in-alt"></i> Xác nhận
+            </button>
+            <div id="loginError" class="error-msg">
+                <i class="fas fa-exclamation-circle"></i> Mã không chính xác. Thử lại!
             </div>
         </div>
     </div>
-</div>
 
-        <!-- Region Tab -->
-        <div id="byRegion" class="tab-content">
-            <div class="charts-grid">
-                <div class="chart-container full-width-chart">
-                    <h3><i class="fas fa-chart-bar"></i> Doanh số chi tiết theo miền</h3>
-                    <div class="chart-wrapper">
-                        <canvas id="barChartMienDetail"></canvas>
+    <!-- Main Content -->
+    <div id="mainApp" class="main-content">
+        <div class="container">
+            <div class="header">
+                <h1><i class="fas fa-chart-line"></i> Phân Tích Doanh Số Bán Hàng</h1>
+            </div>
+
+            <div class="filter-section">
+                <div class="filter-group">
+                    <label><i class="fas fa-calendar"></i> Từ ngày</label>
+                    <input type="text" id="startDate" class="datepicker" placeholder="Chọn ngày bắt đầu">
+                </div>
+                <div class="filter-group">
+                    <label><i class="fas fa-calendar"></i> Đến ngày</label>
+                    <input type="text" id="endDate" class="datepicker" placeholder="Chọn ngày kết thúc">
+                </div>
+            </div>
+
+            <div class="tab-buttons">
+                <button class="tab-btn active" onclick="switchTab('overview', event)">Tổng quan</button>
+                <button class="tab-btn" onclick="switchTab('byRegion', event)">Theo miền</button>
+                <button class="tab-btn" onclick="switchTab('byArea', event)">Theo khu vực</button>
+                <button class="tab-btn" onclick="switchTab('byProvince', event)">Theo tỉnh</button>
+                <button class="tab-btn" onclick="switchTab('byNPP', event)">Theo NPP</button>
+            </div>
+
+            <!-- Overview Tab -->
+            <div id="overview" class="tab-content active">
+                <div class="stats-grid" id="overviewStats"></div>
+                <div class="charts-grid">
+                    <div class="chart-container">
+                        <h3><i class="fas fa-chart-pie"></i> Doanh số theo miền</h3>
+                        <div class="chart-wrapper">
+                            <canvas id="pieChartMien"></canvas>
+                        </div>
+                    </div>
+                    <div class="chart-container">
+                        <h3><i class="fas fa-chart-line"></i> Doanh số theo ngành hàng</h3>
+                        <div class="chart-wrapper">
+                            <canvas id="lineChartNganhHang"></canvas>
+                        </div>
+                    </div>
+                    <div class="chart-container full-width-chart">
+                        <h3><i class="fas fa-chart-bar"></i> Doanh số theo khu vực</h3>
+                        <div class="chart-wrapper">
+                            <canvas id="barChartKV"></canvas>
+                        </div>
+                    </div>
+                    <div class="chart-container full-width-chart">
+                        <h3><i class="fas fa-chart-line"></i> Xu hướng doanh số theo ngày</h3>
+                        <div class="chart-wrapper">
+                            <canvas id="lineChartDaily"></canvas>
+                        </div>
                     </div>
                 </div>
             </div>
-            <div class="data-table" id="regionTable"></div>
-        </div>
 
-        <!-- Area Tab -->
-        <div id="byArea" class="tab-content">
-            <div class="charts-grid">
-                <div class="chart-container full-width-chart">
-                    <h3><i class="fas fa-chart-bar"></i> Doanh số chi tiết theo khu vực</h3>
-                    <div class="chart-wrapper">
-                        <canvas id="barChartKVDetail"></canvas>
+            <!-- Region Tab -->
+            <div id="byRegion" class="tab-content">
+                <div class="charts-grid">
+                    <div class="chart-container full-width-chart">
+                        <h3><i class="fas fa-chart-bar"></i> Doanh số chi tiết theo miền</h3>
+                        <div class="chart-wrapper">
+                            <canvas id="barChartMienDetail"></canvas>
+                        </div>
                     </div>
                 </div>
+                <div class="data-table" id="regionTable"></div>
             </div>
-            <div class="data-table" id="areaTable"></div>
-        </div>
 
-        <!-- Province Tab -->
-        <div id="byProvince" class="tab-content">
-            <div class="charts-grid">
-                <div class="chart-container full-width-chart">
-                    <h3><i class="fas fa-chart-bar"></i> Doanh số bán theo tỉnh</h3>
-                    <div class="chart-wrapper">
-                        <canvas id="barChartProvince"></canvas>
+            <!-- Area Tab -->
+            <div id="byArea" class="tab-content">
+                <div class="charts-grid">
+                    <div class="chart-container full-width-chart">
+                        <h3><i class="fas fa-chart-bar"></i> Doanh số chi tiết theo khu vực</h3>
+                        <div class="chart-wrapper">
+                            <canvas id="barChartKVDetail"></canvas>
+                        </div>
                     </div>
                 </div>
+                <div class="data-table" id="areaTable"></div>
             </div>
-            
-            <div class="data-table-header">
-                <h3><i class="fas fa-city"></i> Thống kê theo tỉnh (Click vào tỉnh để xem chi tiết sản phẩm)</h3>
-                <div class="header-search-wrapper">
-                    <i class="fas fa-search search-icon"></i>
-                    <input type="text" id="provinceSearch" placeholder="Tìm kiếm theo tên tỉnh...">
-                    <button class="clear-search-btn" onclick="clearProvinceSearch()" title="Xóa tìm kiếm">
-                        <i class="fas fa-times"></i>
-                    </button>
-                </div>
-            </div>
-            
-            <div class="data-table" id="provinceTable"></div>
-        </div>
 
-        <!-- NPP Tab -->
-        <div id="byNPP" class="tab-content">
-            <div class="charts-grid">
-                <div class="chart-container full-width-chart">
-                    <h3><i class="fas fa-chart-bar"></i> Doanh số bán theo NPP</h3>
-                    <div class="chart-wrapper">
-                        <canvas id="barChartNPPTop"></canvas>
+            <!-- Province Tab -->
+            <div id="byProvince" class="tab-content">
+                <div class="charts-grid">
+                    <div class="chart-container full-width-chart">
+                        <h3><i class="fas fa-chart-bar"></i> Doanh số bán theo tỉnh</h3>
+                        <div class="chart-wrapper">
+                            <canvas id="barChartProvince"></canvas>
+                        </div>
                     </div>
                 </div>
-            </div>
-            
-            <div class="data-table-header">
-                <h3><i class="fas fa-users"></i> Thống kê theo NPP (Click vào NPP để xem chi tiết)</h3>
-                <div class="header-search-wrapper">
-                    <i class="fas fa-search search-icon"></i>
-                    <input type="text" id="nppSearch" placeholder="Tìm kiếm theo tên NPP...">
-                    <button class="clear-search-btn" onclick="clearNPPSearch()" title="Xóa tìm kiếm">
-                        <i class="fas fa-times"></i>
-                    </button>
+                
+                <div class="data-table-header">
+                    <h3><i class="fas fa-city"></i> Thống kê theo tỉnh (Click vào tỉnh để xem chi tiết sản phẩm)</h3>
+                    <div class="header-search-wrapper">
+                        <i class="fas fa-search search-icon"></i>
+                        <input type="text" id="provinceSearch" placeholder="Tìm kiếm theo tên tỉnh...">
+                        <button class="clear-search-btn" onclick="clearProvinceSearch()" title="Xóa tìm kiếm">
+                            <i class="fas fa-times"></i>
+                        </button>
+                    </div>
                 </div>
+                
+                <div class="data-table" id="provinceTable"></div>
             </div>
-            
-            <div class="data-table" id="nppTable"></div>
+
+            <!-- NPP Tab -->
+            <div id="byNPP" class="tab-content">
+                <div class="charts-grid">
+                    <div class="chart-container full-width-chart">
+                        <h3><i class="fas fa-chart-bar"></i> Doanh số bán theo NPP</h3>
+                        <div class="chart-wrapper">
+                            <canvas id="barChartNPPTop"></canvas>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="data-table-header">
+                    <h3><i class="fas fa-users"></i> Thống kê theo NPP (Click vào NPP để xem chi tiết)</h3>
+                    <div class="header-search-wrapper">
+                        <i class="fas fa-search search-icon"></i>
+                        <input type="text" id="nppSearch" placeholder="Tìm kiếm theo tên NPP...">
+                        <button class="clear-search-btn" onclick="clearNPPSearch()" title="Xóa tìm kiếm">
+                            <i class="fas fa-times"></i>
+                        </button>
+                    </div>
+                </div>
+                
+                <div class="data-table" id="nppTable"></div>
+            </div>
         </div>
 
         <!-- Modals -->
@@ -276,7 +298,6 @@
                                     <th>Doanh số bán</th>
                                     <th>Chiết khấu</th>
                                     <th>Doanh thu thuần</th>
-                                   
                                     <th>Số NPP</th>
                                     <th>Chi tiết NPP</th>
                                 </tr>
@@ -325,11 +346,38 @@
     
     <!-- JS Modules -->
     <script src="js/utils.js"></script>
+    <script src="js/login.js"></script>
     <script src="js/main.js"></script>
     <script src="js/overview.js"></script>
     <script src="js/region.js"></script>
     <script src="js/area.js"></script>
     <script src="js/province.js"></script>
     <script src="js/npp.js"></script>
+    
+    <script>
+        // Khởi tạo đăng nhập khi trang load
+        document.addEventListener('DOMContentLoaded', function() {
+            if (typeof initAuth === 'function') {
+                initAuth();
+            }
+        });
+        
+        // Hàm xác thực từ nút bấm
+        function verifyAccess() {
+            if (window.authInstance) {
+                window.authInstance.login();
+            }
+        }
+        
+        // Callback sau khi đăng nhập thành công
+        window.onLoginSuccess = function() {
+            if (typeof initializeDatePickers === 'function') {
+                initializeDatePickers();
+            }
+            if (typeof applyFilters === 'function') {
+                applyFilters();
+            }
+        };
+    </script>
 </body>
 </html>

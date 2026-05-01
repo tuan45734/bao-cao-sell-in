@@ -2,11 +2,17 @@
 let filteredData = [];
 
 document.addEventListener('DOMContentLoaded', function () {
+    // Không tự động khởi tạo nữa, để login.js quản lý
+    // Chỉ khởi tạo sau khi đăng nhập thành công qua onLoginSuccess
+});
+
+// Hàm này sẽ được gọi từ login.js sau khi đăng nhập thành công
+window.onLoginSuccess = function() {
     initializeDatePickers();
     // Sử dụng enrichedSalesData thay vì salesData
     filteredData = [...enrichedSalesData];
     updateAll();
-});
+};
 
 function initializeDatePickers() {
     flatpickr.localize({
@@ -58,15 +64,22 @@ function applyFilters() {
     updateAll();
 }
 
+function parseDate(dateStr) {
+    if (!dateStr) return null;
+    const parts = dateStr.split('/');
+    return new Date(parts[2], parts[1] - 1, parts[0]);
+}
+
 function updateAll() {
-    updateOverviewStats();
-    updateOverviewCharts();
-    updateRegionTables();
-    updateRegionCharts();
-    updateAreaTables();
-    updateAreaCharts();
-    updateProvinceData();
-    updateNPPData();
+    // Kiểm tra các hàm có tồn tại không trước khi gọi
+    if (typeof updateOverviewStats === 'function') updateOverviewStats();
+    if (typeof updateOverviewCharts === 'function') updateOverviewCharts();
+    if (typeof updateRegionTables === 'function') updateRegionTables();
+    if (typeof updateRegionCharts === 'function') updateRegionCharts();
+    if (typeof updateAreaTables === 'function') updateAreaTables();
+    if (typeof updateAreaCharts === 'function') updateAreaCharts();
+    if (typeof updateProvinceData === 'function') updateProvinceData();
+    if (typeof updateNPPData === 'function') updateNPPData();
 }
 
 function switchTab(tabId, event) {
@@ -81,11 +94,11 @@ function switchTab(tabId, event) {
     document.getElementById(tabId).classList.add('active');
 
     if (tabId === 'byProvince') {
-        openProvinceModal();
-        updateProvinceData();
+        if (typeof openProvinceModal === 'function') openProvinceModal();
+        if (typeof updateProvinceData === 'function') updateProvinceData();
     } else if (tabId === 'byNPP') {
-        openNPPModal();
-        updateNPPData();
+        if (typeof openNPPModal === 'function') openNPPModal();
+        if (typeof updateNPPData === 'function') updateNPPData();
     }
 }
 
@@ -99,11 +112,11 @@ window.onclick = function(event) {
     modals.forEach(modalId => {
         const modal = document.getElementById(modalId);
         if (event.target == modal) {
-            if (modalId === 'provinceModal') closeProvinceModal();
-            if (modalId === 'nppModal') closeNPPModal();
-            if (modalId === 'nppDetailModal') closeNPPDetailModal();
-            if (modalId === 'provinceDetailModal') closeProvinceDetailModal();
-            if (modalId === 'nppByProductModal') closeNPPByProductModal();
+            if (modalId === 'provinceModal' && typeof closeProvinceModal === 'function') closeProvinceModal();
+            if (modalId === 'nppModal' && typeof closeNPPModal === 'function') closeNPPModal();
+            if (modalId === 'nppDetailModal' && typeof closeNPPDetailModal === 'function') closeNPPDetailModal();
+            if (modalId === 'provinceDetailModal' && typeof closeProvinceDetailModal === 'function') closeProvinceDetailModal();
+            if (modalId === 'nppByProductModal' && typeof closeNPPByProductModal === 'function') closeNPPByProductModal();
         }
     });
 };
