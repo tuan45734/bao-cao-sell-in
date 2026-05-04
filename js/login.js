@@ -1,7 +1,7 @@
 // js/login.js - Module xác thực đăng nhập (không lưu phiên)
 
 const AUTH_CONFIG = {
-    ACCESS_CODE: 'ADMIN99'  // Mã cố định, không phân biệt hoa thường
+    ACCESS_CODE: 'ANCUNGBATUYET99'  // Mã cố định, không phân biệt hoa thường
 };
 
 class AuthManager {
