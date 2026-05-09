@@ -16093,9 +16093,7 @@ function getNganhHang(tenSanPham) {
     if (lowerName.includes('snack')) {
         return 'Hàng Ướt';
     }
-     if (lowerName.includes('cá')) {
-        return 'Cá Cơm';
-    }
+     
     return 'Phụ';
 }
 

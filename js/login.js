@@ -1,13 +1,22 @@
-// js/login.js - Module xác thực đăng nhập (không lưu phiên)
+// js/login.js - Module xác thực đăng nhập với phân quyền
 
 const AUTH_CONFIG = {
-    ACCESS_CODE: 'ANCUNGBATUYET99'  // Mã cố định, không phân biệt hoa thường
+    USERS: {
+        'KV1ADZ': { role: 'KV1', displayName: 'KV1' },
+        'KV2ZAC': { role: 'KV2', displayName: 'KV2' },
+        'KV3CCC': { role: 'KV3', displayName: 'KV3' },
+        'KV4YXY': { role: 'KV4', displayName: 'KV4' },
+        'KV5XXZ': { role: 'KV5', displayName: 'KV5' },
+        'KV6XBC': { role: 'KV6', displayName: 'KV6' },
+        'ANCUNGBATUYET99': { role: 'ADMIN', displayName: 'ADMIN' }
+    }
 };
 
 class AuthManager {
     constructor() {
         this.loginOverlay = null;
         this.mainContent = null;
+        this.currentUser = null;
     }
 
     init() {
@@ -18,7 +27,9 @@ class AuthManager {
     }
 
     verifyCode(code) {
-        return code && code.trim().toUpperCase() === AUTH_CONFIG.ACCESS_CODE;
+        if (!code) return false;
+        const trimmedCode = code.trim().toUpperCase();
+        return AUTH_CONFIG.USERS[trimmedCode] || false;
     }
 
     async login() {
@@ -36,13 +47,18 @@ class AuthManager {
         // Delay nhẹ để thấy hiệu ứng
         await new Promise(resolve => setTimeout(resolve, 300));
         
-        if (this.verifyCode(code)) {
+        const user = this.verifyCode(code);
+        if (user) {
+            this.currentUser = {
+                role: user.role,
+                displayName: user.displayName,
+                accessCode: code.trim().toUpperCase()
+            };
             this.showMainContent();
             if (errorDiv) errorDiv.style.display = 'none';
             
-            // Gọi callback sau khi đăng nhập thành công
             if (typeof window.onLoginSuccess === 'function') {
-                window.onLoginSuccess();
+                window.onLoginSuccess(this.currentUser);
             }
         } else {
             if (errorDiv) {

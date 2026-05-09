@@ -1,5 +1,7 @@
 // js/main.js
 let filteredData = [];
+let currentUserRole = null;
+let currentKhuVucAccess = null;
 
 document.addEventListener('DOMContentLoaded', function () {
     // Không tự động khởi tạo nữa, để login.js quản lý
@@ -7,10 +9,22 @@ document.addEventListener('DOMContentLoaded', function () {
 });
 
 // Hàm này sẽ được gọi từ login.js sau khi đăng nhập thành công
-window.onLoginSuccess = function() {
+window.onLoginSuccess = function(user) {
+    currentUserRole = user.role;
+    currentKhuVucAccess = user.role === 'ADMIN' ? null : user.role;
+
     initializeDatePickers();
-    // Sử dụng enrichedSalesData thay vì salesData
-    filteredData = [...enrichedSalesData];
+
+    if (currentKhuVucAccess) {
+        filteredData = enrichedSalesData.filter(item => item.maKhuVuc === currentKhuVucAccess);
+        if (typeof provinceFilter !== 'undefined') {
+            provinceFilter.khuVuc = currentKhuVucAccess;
+        }
+    } else {
+        filteredData = [...enrichedSalesData];
+    }
+
+    applyTabPermissions();
     updateAll();
 };
 
@@ -50,17 +64,21 @@ function applyFilters() {
     const startDate = document.getElementById('startDate').value;
     const endDate = document.getElementById('endDate').value;
 
-    if (startDate && endDate) {
-        filteredData = enrichedSalesData.filter(item => {
-            const itemDate = parseDate(item.ngay);
-            const start = parseDate(startDate);
-            const end = parseDate(endDate);
-            return itemDate >= start && itemDate <= end;
-        });
-    } else {
-        filteredData = [...enrichedSalesData];
+    let filtered = [...enrichedSalesData];
+    if (currentKhuVucAccess) {
+        filtered = filtered.filter(item => item.maKhuVuc === currentKhuVucAccess);
     }
 
+    if (startDate && endDate) {
+        const start = parseDate(startDate);
+        const end = parseDate(endDate);
+        filtered = filtered.filter(item => {
+            const itemDate = parseDate(item.ngay);
+            return itemDate >= start && itemDate <= end;
+        });
+    }
+
+    filteredData = filtered;
     updateAll();
 }
 
@@ -80,6 +98,55 @@ function updateAll() {
     if (typeof updateAreaCharts === 'function') updateAreaCharts();
     if (typeof updateProvinceData === 'function') updateProvinceData();
     if (typeof updateNPPData === 'function') updateNPPData();
+}
+
+function applyTabPermissions() {
+    const isAdmin = currentUserRole === 'ADMIN';
+    const adminOnlyTabs = ['overview', 'byRegion', 'byArea'];
+    const tabButtons = document.querySelectorAll('.tab-btn');
+    const tabContents = {
+        overview: document.getElementById('overview'),
+        byRegion: document.getElementById('byRegion'),
+        byArea: document.getElementById('byArea'),
+        byProvince: document.getElementById('byProvince'),
+        byNPP: document.getElementById('byNPP')
+    };
+
+    let firstVisibleTab = null;
+
+    tabButtons.forEach(btn => {
+        const onclickAttr = btn.getAttribute('onclick');
+        let tabId = null;
+        if (onclickAttr) {
+            const match = onclickAttr.match(/switchTab\('([^']+)'/);
+            if (match) tabId = match[1];
+        }
+
+        if (!tabId) return;
+
+        if (adminOnlyTabs.includes(tabId) && !isAdmin) {
+            btn.style.display = 'none';
+            if (tabContents[tabId]) tabContents[tabId].classList.remove('active');
+        } else {
+            btn.style.display = 'block';
+            if (!firstVisibleTab && tabContents[tabId]) {
+                firstVisibleTab = tabId;
+            }
+        }
+    });
+
+    if (firstVisibleTab) {
+        tabButtons.forEach(btn => btn.classList.remove('active'));
+        Object.values(tabContents).forEach(tab => tab && tab.classList.remove('active'));
+
+        const firstBtn = Array.from(tabButtons).find(btn => {
+            const attr = btn.getAttribute('onclick');
+            return attr && attr.includes(`switchTab('${firstVisibleTab}'`);
+        });
+
+        if (firstBtn) firstBtn.classList.add('active');
+        if (tabContents[firstVisibleTab]) tabContents[firstVisibleTab].classList.add('active');
+    }
 }
 
 function switchTab(tabId, event) {

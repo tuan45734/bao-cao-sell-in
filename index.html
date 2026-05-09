@@ -368,16 +368,6 @@
                 window.authInstance.login();
             }
         }
-        
-        // Callback sau khi đăng nhập thành công
-        window.onLoginSuccess = function() {
-            if (typeof initializeDatePickers === 'function') {
-                initializeDatePickers();
-            }
-            if (typeof applyFilters === 'function') {
-                applyFilters();
-            }
-        };
     </script>
 </body>
 </html>
