@@ -8,7 +8,7 @@ const AUTH_CONFIG = {
         'KV4YXY': { role: 'KV4', displayName: 'KV4' },
         'KV5XXZ': { role: 'KV5', displayName: 'KV5' },
         'KV6XBC': { role: 'KV6', displayName: 'KV6' },
-        'ANCUNGBATUYET99': { role: 'ADMIN', displayName: 'ADMIN' }
+        '99': { role: 'ADMIN', displayName: 'ADMIN' }
     }
 };
 
