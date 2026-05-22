@@ -92,6 +92,42 @@ body {
     margin-right: 5px;
 }
 
+.main-tab-buttons {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 20px;
+    flex-wrap: wrap;
+}
+
+.main-tab-btn {
+    padding: 12px 30px;
+    background: #e0e0e0;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 16px;
+    font-weight: 600;
+    transition: all 0.3s;
+}
+
+.main-tab-btn.active {
+    background: linear-gradient(135deg, #667eea 0%, #ff7300 100%);
+    color: white;
+    box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+}
+
+.main-tab-btn:not(.active):hover {
+    background: #d0d0d0;
+}
+
+.main-tab-content {
+    display: none;
+}
+
+.main-tab-content.active {
+    display: block;
+}
+
 .tab-buttons {
     display: flex;
     gap: 10px;

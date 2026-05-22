@@ -57,6 +57,7 @@ function initializeDatePickers() {
         nextArrow: '<i class="fas fa-chevron-right"></i>',
         placeholder: 'dd/mm/yyyy'
     });
+
 }
 
 // Chỉ giữ 1 hàm applyFilters - sử dụng enrichedSalesData
@@ -89,7 +90,7 @@ function parseDate(dateStr) {
 }
 
 function updateAll() {
-    // Kiểm tra các hàm có tồn tại không trước khi gọi
+    window.baoCaoFilteredData = [];
     if (typeof updateOverviewStats === 'function') updateOverviewStats();
     if (typeof updateOverviewCharts === 'function') updateOverviewCharts();
     if (typeof updateRegionTables === 'function') updateRegionTables();
@@ -98,6 +99,25 @@ function updateAll() {
     if (typeof updateAreaCharts === 'function') updateAreaCharts();
     if (typeof updateProvinceData === 'function') updateProvinceData();
     if (typeof updateNPPData === 'function') updateNPPData();
+    if (typeof updateBaoCaoData === 'function') updateBaoCaoData();
+}
+
+function switchMainTab(tabId, event) {
+    document.querySelectorAll('.main-tab-btn').forEach(btn => {
+        btn.classList.remove('active');
+    });
+    event.target.classList.add('active');
+
+    document.querySelectorAll('.main-tab-content').forEach(tab => {
+        tab.classList.remove('active');
+    });
+    document.getElementById(tabId).classList.add('active');
+
+    if (tabId === 'thongKe') {
+        updateAll();
+    } else if (tabId === 'baoCao') {
+        if (typeof updateBaoCaoData === 'function') updateBaoCaoData();
+    }
 }
 
 function applyTabPermissions() {
@@ -168,6 +188,27 @@ function switchTab(tabId, event) {
         if (typeof updateNPPData === 'function') updateNPPData();
     }
 }
+
+function applyBaoCaoFilter() {
+    const startDate = document.getElementById('baoCaoStartDate').value;
+    const endDate = document.getElementById('baoCaoEndDate').value;
+
+    let filtered = [...enrichedSalesData];
+
+    if (startDate && endDate) {
+        const start = parseDate(startDate);
+        const end = parseDate(endDate);
+        filtered = filtered.filter(item => {
+            const itemDate = parseDate(item.ngay);
+            return itemDate >= start && itemDate <= end;
+        });
+    }
+
+    window.baoCaoFilteredData = filtered;
+    if (typeof updateBaoCaoData === 'function') updateBaoCaoData();
+}
+
+window.baoCaoFilteredData = [];
 
 // Window click handler for modals
 window.onclick = function(event) {

@@ -17619,7 +17619,7 @@ function getNganhHang(tenSanPham) {
         return 'Chân Gà';
     }
     if (lowerName.includes('bim bim') || lowerName.includes('bim quẩy') || 
-        lowerName.includes('đùi gà') || lowerName.includes('hũ bim') || 
+        lowerName.includes('đùi gà') || lowerName.includes('hũ bim') || lowerName.includes('bánh tráng') ||lowerName.includes('quẩy') ||
         lowerName.includes('hũ đùi')) {
         return 'Bim Quẩy';
     }
