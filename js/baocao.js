@@ -194,11 +194,7 @@ function computeChanges(periods, nganhHangs) {
             : 0;
         const change = prevTotal > 0 ? ((total - prevTotal) / prevTotal) * 100 : 0;
         const totalSL = nganhHangs.reduce((sum, n) => sum + (p.nganhData[n] ? p.nganhData[n].soLuong : 0), 0);
-        const prevTotalSL = prev
-            ? nganhHangs.reduce((sum, n) => sum + (prev.nganhData[n] ? prev.nganhData[n].soLuong : 0), 0)
-            : 0;
-        const changeSL = prevTotalSL > 0 ? ((totalSL - prevTotalSL) / prevTotalSL) * 100 : 0;
-        return { total, change, isIncrease: change >= 0, totalSL, changeSL, isIncreaseSL: changeSL >= 0 };
+        return { total, change, isIncrease: change >= 0, totalSL };
     });
 }
 
@@ -244,22 +240,6 @@ function renderBaoCaoChart(result, params) {
         tension: 0.3,
         fill: true,
         yAxisID: 'y'
-    });
-
-    datasets.push({
-        label: 'Tổng số lượng',
-        data: changes.map(c => c.totalSL),
-        type: 'line',
-        borderColor: '#17a2b8',
-        backgroundColor: 'rgba(23, 162, 184, 0.1)',
-        borderWidth: 2,
-        borderDash: [6, 3],
-        pointBackgroundColor: '#17a2b8',
-        pointRadius: 4,
-        pointHoverRadius: 6,
-        tension: 0.3,
-        fill: false,
-        yAxisID: 'y1'
     });
 
     baoCaoChartInstance = new Chart(ctx, {
@@ -325,11 +305,6 @@ function renderBaoCaoChart(result, params) {
                                 const sign = c.isIncrease ? '+' : '';
                                 return 'Tổng: ' + formatMoney(context.raw) + ' (' + sign + c.change.toFixed(1) + '%)';
                             }
-                            if (context.dataset.label === 'Tổng số lượng') {
-                                const c = changes[context.dataIndex];
-                                const sign = c.isIncreaseSL ? '+' : '';
-                                return 'Số lượng: ' + formatNumber(context.raw) + ' (' + sign + c.changeSL.toFixed(1) + '%)';
-                            }
                             const nganh = context.dataset.label;
                             const p = periods[context.dataIndex];
                             const info = p.nganhData[nganh];
@@ -351,20 +326,6 @@ function renderBaoCaoChart(result, params) {
                             return formatMoney(value);
                         },
                         font: { size: 11 }
-                    }
-                },
-                y1: {
-                    beginAtZero: true,
-                    position: 'right',
-                    title: { display: true, text: 'Số lượng', font: { size: 12, weight: 'bold' } },
-                    ticks: {
-                        callback: function(value) {
-                            return formatNumber(value);
-                        },
-                        font: { size: 11 }
-                    },
-                    grid: {
-                        drawOnChartArea: false
                     }
                 },
                 x: {
@@ -432,15 +393,7 @@ function renderBaoCaoTable(result, params) {
             html += `<br><small style="color: ${color}; font-weight: bold;">${sign}${formatFullNumber(diff)}</small>`;
         }
         html += `</td>`;
-        html += `<td style="text-align: right;"><strong>${formatNumber(totalSL)}</strong>`;
-        const prevTotalSL = i > 0 ? changes[i - 1].totalSL : 0;
-        if (i > 0 && prevTotalSL > 0) {
-            const diffSL = totalSL - prevTotalSL;
-            const colorSL = diffSL >= 0 ? '#28a745' : '#dc3545';
-            const signSL = diffSL >= 0 ? '+' : '';
-            html += `<br><small style="color: ${colorSL}; font-weight: bold;">${signSL}${formatNumber(diffSL)}</small>`;
-        }
-        html += `</td></tr>`;
+        html += `<td style="text-align: right;"><strong>${formatNumber(totalSL)}</strong></td></tr>`;
     });
 
     html += `
