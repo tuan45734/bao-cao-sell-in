@@ -8,6 +8,7 @@ const AUTH_CONFIG = {
         'KV4YXY': { role: 'KV4', displayName: 'KV4' },
         'KV5XXZ': { role: 'KV5', displayName: 'KV5' },
         'KV6XBC': { role: 'KV6', displayName: 'KV6' },
+        'KV7ZZA': { role: 'KV7', displayName: 'KV7', accessScope: 'Miền Trung' },
         '99': { role: 'ADMIN', displayName: 'ADMIN' }
     }
 };
@@ -52,6 +53,7 @@ class AuthManager {
             this.currentUser = {
                 role: user.role,
                 displayName: user.displayName,
+                accessScope: user.accessScope || user.role,
                 accessCode: code.trim().toUpperCase()
             };
             this.showMainContent();

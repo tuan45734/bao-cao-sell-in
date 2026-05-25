@@ -11,14 +11,19 @@ document.addEventListener('DOMContentLoaded', function () {
 // Hàm này sẽ được gọi từ login.js sau khi đăng nhập thành công
 window.onLoginSuccess = function(user) {
     currentUserRole = user.role;
-    currentKhuVucAccess = user.role === 'ADMIN' ? null : user.role;
+    currentKhuVucAccess = user.accessScope || (/^KV\d+$/.test(user.role) ? user.role : null);
 
     initializeDatePickers();
 
     if (currentKhuVucAccess) {
-        filteredData = enrichedSalesData.filter(item => item.maKhuVuc === currentKhuVucAccess);
+        filteredData = enrichedSalesData.filter(item => item.maKhuVuc === currentKhuVucAccess || item.mien === currentKhuVucAccess);
         if (typeof provinceFilter !== 'undefined') {
-            provinceFilter.khuVuc = currentKhuVucAccess;
+            if (/^KV\d+$/.test(currentKhuVucAccess)) {
+                provinceFilter.khuVuc = currentKhuVucAccess;
+            } else {
+                provinceFilter.mien = currentKhuVucAccess;
+                provinceFilter.khuVuc = '';
+            }
         }
     } else {
         filteredData = [...enrichedSalesData];
@@ -67,7 +72,7 @@ function applyFilters() {
 
     let filtered = [...enrichedSalesData];
     if (currentKhuVucAccess) {
-        filtered = filtered.filter(item => item.maKhuVuc === currentKhuVucAccess);
+        filtered = filtered.filter(item => item.maKhuVuc === currentKhuVucAccess || item.mien === currentKhuVucAccess);
     }
 
     if (startDate && endDate) {

@@ -4,7 +4,7 @@ let areaCharts = {};
 // Hàm sắp xếp khu vực theo thứ tự mong muốn
 function sortKhuVuc(kvList) {
     const order = [
-        'KV1', 'KV2', 'KV3', 'KV4', 'KV5', 'KV6',
+        'KV1', 'KV2', 'KV3', 'KV4', 'KV5', 'KV6', 'KV7',
         'Miền Bắc (Chợ)', 'Miền Trung', 'Miền Nam'
     ];
     
