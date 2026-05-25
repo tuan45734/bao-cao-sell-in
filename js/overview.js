@@ -242,21 +242,21 @@ function updateLineChartNganhHang() {
 
 function updateBarChartKV() {
     const ctx = document.getElementById('barChartKV').getContext('2d');
-    const kvData = {};
+    const mienData = {};
     const totalAll = enrichedSalesData.reduce((sum, item) => sum + (item.doanhSoBan || 0), 0);
 
     enrichedSalesData.forEach(item => {
-        const kv = item.maKhuVuc;
-        kvData[kv] = (kvData[kv] || 0) + (item.doanhSoBan || 0);
+        const mien = item.mien;
+        mienData[mien] = (mienData[mien] || 0) + (item.doanhSoBan || 0);
     });
 
     overviewCharts.barKV = new Chart(ctx, {
         type: 'bar',
         data: {
-            labels: Object.keys(kvData),
+            labels: Object.keys(mienData),
             datasets: [{
                 label: 'Doanh số bán',
-                data: Object.values(kvData),
+                data: Object.values(mienData),
                 backgroundColor: '#ff9216'
             }]
         },
@@ -298,7 +298,7 @@ function updateBarChartKV() {
                     }
                 },
                 x: {
-                    title: { display: true, text: 'Khu vực', font: { size: 12, weight: 'bold' } },
+                    title: { display: true, text: 'Miền', font: { size: 12, weight: 'bold' } },
                     ticks: {
                         maxRotation: 30,
                         minRotation: 30,
@@ -423,3 +423,121 @@ function updateLineChartDaily() {
         plugins: [ChartDataLabels]
     });
 }
+
+// --- Per-chart date-range filter for the daily trend (non-destructive) ---
+function initDailyTrendFilter() {
+    if (typeof flatpickr === 'undefined') return;
+
+    const opts = {
+        dateFormat: 'd/m/Y',
+        locale: 'vn',
+        allowInput: true,
+        prevArrow: '<i class="fas fa-chevron-left"></i>',
+        nextArrow: '<i class="fas fa-chevron-right"></i>'
+    };
+
+    flatpickr('#dailyStartDate', opts);
+    flatpickr('#dailyEndDate', opts);
+
+    const applyBtn = document.getElementById('dailyApplyBtn');
+    const clearBtn = document.getElementById('dailyClearBtn');
+
+    if (applyBtn) applyBtn.addEventListener('click', updateDailyFromControls);
+    if (clearBtn) clearBtn.addEventListener('click', function() {
+        document.getElementById('dailyStartDate').value = '';
+        document.getElementById('dailyEndDate').value = '';
+        // redraw original chart using full data by calling existing function
+        if (typeof updateLineChartDaily === 'function') updateLineChartDaily();
+    });
+}
+
+function updateDailyFromControls() {
+    const start = document.getElementById('dailyStartDate').value;
+    const end = document.getElementById('dailyEndDate').value;
+
+    // Build filtered dataset from enrichedSalesData without modifying existing globals
+    let dataSource = [...enrichedSalesData];
+    if (start && end) {
+        const s = parseDate(start);
+        const e = parseDate(end);
+        dataSource = dataSource.filter(item => {
+            const d = parseDate(item.ngay);
+            return d >= s && d <= e;
+        });
+    }
+
+    // Create chart using same structure as original but from filtered data
+    renderDailyChartFromData(dataSource);
+}
+
+function renderDailyChartFromData(dataSource) {
+    const ctx = document.getElementById('lineChartDaily').getContext('2d');
+    if (overviewCharts.lineDaily) overviewCharts.lineDaily.destroy();
+
+    const miens = [...new Set(dataSource.map(item => item.mien))];
+    const dailyDataByMien = {};
+    const allDates = new Set();
+    const totalByDate = {};
+
+    miens.forEach(mien => dailyDataByMien[mien] = {});
+    dataSource.forEach(item => {
+        const date = item.ngay;
+        const mien = item.mien;
+        const doanhSo = item.doanhSoBan || 0;
+        allDates.add(date);
+        dailyDataByMien[mien][date] = (dailyDataByMien[mien][date] || 0) + doanhSo;
+        totalByDate[date] = (totalByDate[date] || 0) + doanhSo;
+    });
+
+    const sortedDates = Array.from(allDates).sort((a, b) => parseDate(a) - parseDate(b));
+    const colors = ['#ff7300', '#667eea', '#b10000', '#4ecdc4', '#45b7d1', '#96ceb4'];
+
+    const datasets = miens.map((mien, index) => ({
+        label: `Miền ${mien}`,
+        data: sortedDates.map(date => dailyDataByMien[mien][date] || 0),
+        borderColor: colors[index % colors.length],
+        backgroundColor: 'transparent',
+        tension: 0.4,
+        fill: false,
+        borderWidth: 3,
+        totalByDate: sortedDates.map(date => totalByDate[date] || 1)
+    }));
+
+    overviewCharts.lineDaily = new Chart(ctx, {
+        type: 'line',
+        data: { labels: sortedDates, datasets: datasets },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            interaction: { mode: 'index', intersect: false },
+            plugins: {
+                datalabels: { display: false },
+                legend: { position: 'top', labels: { font: { size: 13 }, usePointStyle: true, boxWidth: 8 } },
+                tooltip: {
+                    bodyFont: { size: 13 },
+                    titleFont: { size: 13 },
+                    callbacks: {
+                        label: function(context) {
+                            const dataset = context.dataset;
+                            const label = dataset.label || '';
+                            const value = context.raw || 0;
+                            const index = context.dataIndex;
+                            const total = dataset.totalByDate ? dataset.totalByDate[index] : 1;
+                            const percent = ((value / total) * 100).toFixed(1);
+                            return `${label}: ${formatMoney(value)} (${percent}%)`;
+                        }
+                    }
+                }
+            },
+            scales: {
+                y: { beginAtZero: true, title: { display: true, text: 'Doanh số bán', font: { size: 13, weight: 'bold' } }, ticks: { callback: v => formatMoney(v), font: { size: 12 } } },
+                x: { ticks: { maxRotation: 30, minRotation: 30, font: { size: 11 } } }
+            }
+        },
+        plugins: [ChartDataLabels]
+    });
+}
+
+document.addEventListener('DOMContentLoaded', function() {
+    initDailyTrendFilter();
+});

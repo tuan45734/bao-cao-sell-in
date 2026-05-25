@@ -91,14 +91,24 @@
                             </div>
                         </div>
                         <div class="chart-container full-width-chart">
-                            <h3><i class="fas fa-chart-bar"></i> Doanh số theo khu vực</h3>
+                            <h3><i class="fas fa-chart-bar"></i> Doanh số theo miền</h3>
                             <div class="chart-wrapper">
                                 <canvas id="barChartKV"></canvas>
                             </div>
                         </div>
                         <div class="chart-container full-width-chart">
-                            <h3><i class="fas fa-chart-line"></i> Xu hướng doanh số theo ngày</h3>
-                            <div class="chart-wrapper">
+                            <div style="display:flex; justify-content:space-between; align-items:center;">
+                                <h3 style="margin:0;"><i class="fas fa-chart-line"></i> Xu hướng doanh số theo ngày</h3>
+                                <div id="dailyRangeControls" style="display:flex; gap:8px; align-items:center;">
+                                    <label style="font-size:13px; color:#666; margin:0 4px;">Từ</label>
+                                    <input type="text" id="dailyStartDate" class="daily-datepicker" placeholder="dd/mm/yyyy" style="padding:6px 8px; font-size:13px; width:110px;">
+                                    <label style="font-size:13px; color:#666; margin:0 4px;">Đến</label>
+                                    <input type="text" id="dailyEndDate" class="daily-datepicker" placeholder="dd/mm/yyyy" style="padding:6px 8px; font-size:13px; width:110px;">
+                                    <button class="apply-btn" id="dailyApplyBtn" title="Áp dụng" style="padding:6px 8px; font-size:13px;">Áp dụng</button>
+                                    <button class="apply-btn" id="dailyClearBtn" title="Xóa" style="padding:6px 8px; font-size:13px; background:#6c757d;">Xóa</button>
+                                </div>
+                            </div>
+                            <div class="chart-wrapper" style="margin-top:10px;">
                                 <canvas id="lineChartDaily"></canvas>
                             </div>
                         </div>
