@@ -11,7 +11,9 @@ document.addEventListener('DOMContentLoaded', function () {
 // Hàm này sẽ được gọi từ login.js sau khi đăng nhập thành công
 window.onLoginSuccess = function(user) {
     currentUserRole = user.role;
-    currentKhuVucAccess = user.accessScope || (/^KV\d+$/.test(user.role) ? user.role : null);
+    currentKhuVucAccess = user.role === 'ADMIN'
+        ? null
+        : (user.accessScope || (/^KV\d+$/.test(user.role) ? user.role : null));
 
     initializeDatePickers();
 
