@@ -342,6 +342,24 @@ function renderBaoCaoChart(result, params) {
 function renderBaoCaoTable(result, params) {
     const { periods, nganhHangs } = result;
     const changes = computeChanges(periods, nganhHangs);
+    const totalsByNganh = {};
+    let grandTotalDoanhSo = 0;
+    let grandTotalSL = 0;
+
+    nganhHangs.forEach(n => {
+        totalsByNganh[n] = { doanhSo: 0, soLuong: 0 };
+    });
+
+    periods.forEach(p => {
+        nganhHangs.forEach(n => {
+            const info = p.nganhData[n];
+            if (!info) return;
+            totalsByNganh[n].doanhSo += info.doanhSo || 0;
+            totalsByNganh[n].soLuong += info.soLuong || 0;
+        });
+        grandTotalDoanhSo += nganhHangs.reduce((sum, n) => sum + (p.nganhData[n] ? p.nganhData[n].doanhSo : 0), 0);
+        grandTotalSL += nganhHangs.reduce((sum, n) => sum + (p.nganhData[n] ? p.nganhData[n].soLuong : 0), 0);
+    });
 
     let title = 'Báo cáo doanh số';
     if (params.type === 'week') title = 'So sánh doanh số theo tuần - Tháng ' + params.month + '/' + params.year;
@@ -398,6 +416,24 @@ function renderBaoCaoTable(result, params) {
 
     html += `
                 </tbody>
+                <tfoot>
+                    <tr style="background: #f8f9fa; font-weight: bold;">
+                        <td colspan="2">Tổng cộng</td>
+    `;
+
+    nganhHangs.forEach(n => {
+        const totals = totalsByNganh[n];
+        html += `
+                        <td>${totals.doanhSo > 0 ? formatFullNumber(totals.doanhSo) : '-'}</td>
+                        <td style="text-align: right;">${totals.soLuong > 0 ? formatNumber(totals.soLuong) : '-'}</td>
+        `;
+    });
+
+    html += `
+                        <td>${grandTotalDoanhSo > 0 ? formatFullNumber(grandTotalDoanhSo) : '-'}</td>
+                        <td style="text-align: right;">${grandTotalSL > 0 ? formatNumber(grandTotalSL) : '-'}</td>
+                    </tr>
+                </tfoot>
             </table>
         </div>
     `;
