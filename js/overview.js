@@ -250,14 +250,22 @@ function updateBarChartKV() {
         mienData[mien] = (mienData[mien] || 0) + (item.doanhSoBan || 0);
     });
 
+    const labels = Object.keys(mienData);
+    const values = Object.values(mienData);
+    const maxVal = values.length ? Math.max(...values) : 0;
+    const suggestedMax = Math.ceil(maxVal * 1.1);
+
     overviewCharts.barKV = new Chart(ctx, {
         type: 'bar',
         data: {
-            labels: Object.keys(mienData),
+            labels: labels,
             datasets: [{
                 label: 'Doanh số bán',
-                data: Object.values(mienData),
-                backgroundColor: '#ff9216'
+                data: values,
+                backgroundColor: '#ff9216',
+                maxBarThickness: 80,
+                barPercentage: 0.6,
+                categoryPercentage: 0.6
             }]
         },
         options: {
@@ -289,6 +297,7 @@ function updateBarChartKV() {
             scales: {
                 y: {
                     beginAtZero: true,
+                    suggestedMax: suggestedMax,
                     title: { display: true, text: 'Doanh số bán', font: { size: 12, weight: 'bold' } },
                     ticks: {
                         callback: function (value) {
